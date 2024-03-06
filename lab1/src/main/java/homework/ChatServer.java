@@ -25,8 +25,8 @@ public class ChatServer {
     private static class Handler extends Thread {
         private String name;
         private Socket socket;
-        private Scanner scanner; //read from client
-        private PrintWriter writer; //write on output
+        private Scanner scanner;
+        private PrintWriter writer;
 
         public Handler(Socket socket) {
             this.socket = socket;
@@ -38,7 +38,7 @@ public class ChatServer {
                 writer = new PrintWriter(socket.getOutputStream(), true);
 
                 while (true) {
-                    writer.println("NAME_SUMBITTED");
+                    writer.println("NAME_SUBMITTED");
                     name = scanner.nextLine();
                     if (name == null || name.isEmpty() || clients.containsKey(name)) {
                         continue;
@@ -53,7 +53,7 @@ public class ChatServer {
 
                 writer.println("NAME_ACCEPTED " + name);
                 for (PrintWriter writer : clients.values()) {
-                    writer.println("HEY_HI_HELLO " + name + " has joined");
+                    writer.println("MESSAGE " + name + " has joined");
                 }
 
                 while (true) {
@@ -79,4 +79,3 @@ public class ChatServer {
         }
     }
 }
-

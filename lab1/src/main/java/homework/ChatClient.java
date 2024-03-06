@@ -1,4 +1,5 @@
 package homework;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -11,6 +12,9 @@ public class ChatClient {
     JFrame frame = new JFrame("Chat");
     JTextField textField = new JTextField(40);
     JTextArea messageArea = new JTextArea(8, 40);
+    private static final int PORT = 12345;
+    private DatagramSocket udpSocket;
+    private InetAddress address;
 
     public ChatClient() {
         textField.setEditable(false);
@@ -21,7 +25,13 @@ public class ChatClient {
 
         textField.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                writer.println(textField.getText());
+                String text = textField.getText();
+                if (text.startsWith("U")) {
+                    // Remove 'U' and send the rest as a UDP message
+                    sendUDPMessage(text.substring(1).trim());
+                } else {
+                    writer.println(text);
+                }
                 textField.setText("");
             }
         });
@@ -43,19 +53,32 @@ public class ChatClient {
                 JOptionPane.PLAIN_MESSAGE);
     }
 
+    private void sendUDPMessage(String message) {
+        try {
+            byte[] buf = message.getBytes();
+            DatagramPacket packet = new DatagramPacket(buf, buf.length, address, PORT);
+            udpSocket.send(packet);
+        } catch (IOException e) {
+            System.out.println("IOException: " + e.getMessage());
+        }
+    }
+
     private void run() throws IOException {
         String serverAddress = getServerAddress();
-        Socket socket = new Socket(serverAddress, 12345);
+        Socket socket = new Socket(serverAddress, PORT);
         reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         writer = new PrintWriter(socket.getOutputStream(), true);
 
+        address = InetAddress.getByName(serverAddress);
+        udpSocket = new DatagramSocket();
+
         while (true) {
             String line = reader.readLine();
-            if (line.startsWith("NAME_SUMBITTED")) {
+            if (line.startsWith("NAME_SUBMITTED")) {
                 writer.println(getName());
             } else if (line.startsWith("NAME_ACCEPTED")) {
                 textField.setEditable(true);
-            } else if (line.startsWith("HEY_HI_HELLO")) {
+            } else if (line.startsWith("MESSAGE")) {
                 messageArea.append(line.substring(8) + "\n");
             }
         }
@@ -68,4 +91,3 @@ public class ChatClient {
         client.run();
     }
 }
-
