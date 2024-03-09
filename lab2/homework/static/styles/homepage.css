@@ -1,0 +1,52 @@
+body{
+    background-color: pink;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+header{
+    height: 200px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(249, 156, 171);
+    font-size: 50px;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+}
+
+form{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+input{
+    margin-top: 150px;
+    width: 300px;
+    height: 100px;
+    background-color: rgb(249, 156, 171);
+    border:2px solid rgb(190, 90, 107);;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+    font-size: 30px;
+    color: white;
+    opacity: 1;
+    text-align: center;
+}
+::placeholder{
+    color:rgb(81, 78, 78)
+}
+
+button{
+    margin-top: 20px;
+    width: 120px;
+    height: 50px;
+    background-color: rgb(249, 156, 171);
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+    border:2px solid rgb(190, 90, 107);
+    cursor:pointer;
+}

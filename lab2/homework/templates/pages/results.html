@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherApp</title>
+    <link rel="stylesheet" href="/static/styles/results.css">
+</head>
+<body>
+
+    <header>
+        <div><a href="/">Home</a></div>
+        <b>RESULTS</b>
+    </header>
+
+    <main>
+        <p><strong>City:</strong> {{city}}</p>
+        <div>
+            <p><strong>Temperature MeteoApi: </strong>{{meteo_api_temp}} celsius</p>
+            <p><strong>Temperature WeatherApi: </strong>{{weather_api_temp}} celsius</p>
+            <p><strong>Temperature TomorrowApi: </strong>{{tomorrow_api_temp}} celsius</p>
+        </div>
+        <p><strong>Average temperature: </strong>{{avg_temp}}</p>
+        <p><strong>Maximum temperature: </strong>{{max_temp}}</p>
+        <p><strong>Minimum temperature: </strong>{{min_temp}}</p>
+    </main>
+    
+</body>
+</html>

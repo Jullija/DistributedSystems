@@ -1,0 +1,27 @@
+body{
+    background-color: black;
+    color:red;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+div{
+    position: absolute;
+    left:10px;
+    top:10px;
+    background-color: red;
+    font-size: 40px;
+    border-radius: 20px;
+    height: 40px;
+    width: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+div>a{
+    color: black;
+    text-decoration: none;
+}
