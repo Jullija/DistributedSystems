@@ -3,15 +3,19 @@ package homework;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ChatServer {
-    private static final int PORT = 12345;
-    private static ConcurrentHashMap<String, PrintWriter> clients = new ConcurrentHashMap<>();
+    private static final int PORT = 12346;
+    private static Map<String, PrintWriter> clients = new HashMap<>();
+    private static final Set<InetSocketAddress> clientAddresses = ConcurrentHashMap.newKeySet();
+
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Chat Server is running.");
+        System.out.println("Server running...");
         ServerSocket listener = new ServerSocket(PORT);
+        startUdpThread();
+
 
         try {
             while (true) {
@@ -23,10 +27,10 @@ public class ChatServer {
     }
 
     private static class Handler extends Thread {
-        private String name;
+        private String nick;
         private Socket socket;
-        private Scanner scanner;
-        private PrintWriter writer;
+        private BufferedReader in;
+        private PrintWriter out;
 
         public Handler(Socket socket) {
             this.socket = socket;
@@ -34,48 +38,99 @@ public class ChatServer {
 
         public void run() {
             try {
-                scanner = new Scanner(socket.getInputStream());
-                writer = new PrintWriter(socket.getOutputStream(), true);
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out = new PrintWriter(socket.getOutputStream(), true);
 
                 while (true) {
-                    writer.println("NAME_SUBMITTED");
-                    name = scanner.nextLine();
-                    if (name == null || name.isEmpty() || clients.containsKey(name)) {
+                    nick = in.readLine();
+                    if (nick == null || nick.isEmpty() || nick.equals("quit")) {
+                        out.println("INVALIDNICK");
                         continue;
                     }
                     synchronized (clients) {
-                        if (!clients.containsKey(name)) {
-                            clients.put(name, writer);
+                        if (!clients.containsKey(nick)) {
+                            clients.put(nick, out);
+                            out.println("NICKACCEPTED");
                             break;
+                        } else {
+                            out.println("INVALIDNICK");
                         }
                     }
                 }
 
-                writer.println("NAME_ACCEPTED " + name);
+
                 for (PrintWriter writer : clients.values()) {
-                    writer.println("MESSAGE " + name + " has joined");
+                    if (writer != out) {
+                        writer.println("MESSAGE " + nick + " has joined");
+                    }
                 }
 
-                while (true) {
-                    String input = scanner.nextLine();
-                    if (input.toLowerCase().startsWith("/quit")) {
-                        return;
-                    }
-                    for (PrintWriter writer : clients.values()) {
-                        writer.println("MESSAGE " + name + ": " + input);
+                String input;
+                while ((input = in.readLine()) != null) {
+                    for (Map.Entry<String, PrintWriter> entry : clients.entrySet()) {
+                        PrintWriter writer = entry.getValue();
+                        if (writer != out) { // Exclude the sender
+                            writer.println("MESSAGE FROM " + nick + ": " + input);
+                        }
                     }
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 System.out.println(e);
             } finally {
-                if (name != null) {
-                    clients.remove(name);
+                if (nick != null && out != null) {
+                    clients.remove(nick);
                     for (PrintWriter writer : clients.values()) {
-                        writer.println("MESSAGE " + name + " has left");
+                        if (writer != out) { // Exclude the sender
+                            writer.println("MESSAGE " + nick + " has left");
+                        }
                     }
                 }
-                try { socket.close(); } catch (IOException e) {}
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    System.out.println("Couldn't close a socket, what's going on?");
+                }
             }
         }
     }
+
+    private static void startUdpThread() {
+        new Thread(() -> {
+            try (DatagramSocket socket = new DatagramSocket(PORT)) {
+                byte[] buf = new byte[1024];
+                while (true) {
+                    DatagramPacket packet = new DatagramPacket(buf, buf.length);
+                    socket.receive(packet);
+                    InetSocketAddress clientAddress = new InetSocketAddress(packet.getAddress(), packet.getPort());
+
+                    clientAddresses.add(clientAddress);
+
+                    String received = new String(packet.getData(), 0, packet.getLength()).trim();
+                    if (!received.isEmpty()) {
+                        broadcastUdpMessage(clientAddress, received);
+                    }
+                }
+            } catch (IOException e) {
+                System.out.println("UDP Thread IOException: " + e.getMessage());
+            }
+        }).start();
+    }
+
+    private static void broadcastUdpMessage(InetSocketAddress senderAddress, String message) {
+        clientAddresses.forEach(clientAddress -> {
+            if (!clientAddress.equals(senderAddress)) {
+                try (DatagramSocket ds = new DatagramSocket()) {
+                    byte[] buffer = message.getBytes();
+                    DatagramPacket packet = new DatagramPacket(buffer, buffer.length, clientAddress.getAddress(), clientAddress.getPort());
+                    ds.send(packet);
+                } catch (IOException e) {
+                    System.out.println("Error sending UDP message: " + e.getMessage());
+                }
+            }
+        });
+    }
+
+
+
+
 }
