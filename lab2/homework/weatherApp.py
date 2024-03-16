@@ -6,6 +6,7 @@ from requests.exceptions import HTTPError, RequestException
 import os
 from dotenv import load_dotenv
 import requests
+import httpx
 
 
 load_dotenv()
@@ -16,21 +17,32 @@ templates = Jinja2Templates(directory="templates/pages")
 METEO_API_KEY = os.getenv("METEO_API_KEY")
 WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
 TOMORROW_API_KEY = os.getenv("TOMORROW_API_KEY")
+UNSPLASH_API_KEY = os.getenv("UNSPLASH_API_KEY")
 
 
-def fetch_json(city: str, url: str, api_key: str, param_key=str, param_city=str):
-    params = {f"{param_key}": api_key, f"{param_city}": city}
-    response = requests.get(url, params=params)
-    response.raise_for_status()
-    return response.json()
+async def fetch_json(city: str, url: str, api_key: str, param_key=str, param_city=str):
+    params = {param_key: api_key, param_city: city}
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, params=params)
+        response.raise_for_status()
+        return response.json()
+    
+    
+async def fetch_photo(city:str, url: str):
+    params = {"query": city}
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, params = params)
+        response.raise_for_status()
+        return response.json()
 
 
-def create_data(
+async def create_data(
     request: Request,
     city: str,
     meteo_data: float,
     tomorrow_data: float,
     weather_data: float,
+    unsplash_data: str
 ):
     max_temp = max(meteo_data, tomorrow_data, weather_data)
     min_temp = min(meteo_data, tomorrow_data, weather_data)
@@ -45,6 +57,7 @@ def create_data(
         "avg_temp": avg_temp,
         "max_temp": max_temp,
         "min_temp": min_temp,
+        "unsplash_photo": unsplash_data
     }
 
     return data
@@ -92,7 +105,7 @@ async def post_results(request: Request, city: str = Form(None)):
         )
 
     try:
-        meteo_response = fetch_json(
+        meteo_response = await fetch_json(
             city,
             "https://www.meteosource.com/api/v1/free/point?sections=current&",
             METEO_API_KEY,
@@ -106,7 +119,7 @@ async def post_results(request: Request, city: str = Form(None)):
         )
 
     try:
-        tomorrow_response = fetch_json(
+        tomorrow_response = await fetch_json(
             city,
             "https://api.tomorrow.io/v4/weather/realtime?",
             TOMORROW_API_KEY,
@@ -120,7 +133,7 @@ async def post_results(request: Request, city: str = Form(None)):
         )
 
     try:
-        weather_response = fetch_json(
+        weather_response = await fetch_json(
             city,
             "http://api.weatherapi.com/v1/current.json?",
             WEATHER_API_KEY,
@@ -132,6 +145,17 @@ async def post_results(request: Request, city: str = Form(None)):
         raise HTTPException(
             status_code=500, detail=f"Failed to fetch or parse WeatherAPI data: {e}"
         )
+        
+    try:
+        unsplash_response = await fetch_photo(
+            city, f"https://api.unsplash.com/search/photos/?client_id={UNSPLASH_API_KEY}&"
+        )
+        print(unsplash_response)
+        unsplash_data = unsplash_response["results"][0]["urls"]["raw"]
+    except (KeyError, HTTPError, RequestException) as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch or parse Unsplash data: {e}"
+        )
 
-    data = create_data(request, city, meteo_data, tomorrow_data, weather_data)
+    data = await create_data(request, city, meteo_data, tomorrow_data, weather_data, unsplash_data)
     return templates.TemplateResponse("results.html", context=data)
