@@ -7,6 +7,7 @@ import os
 from dotenv import load_dotenv
 import requests
 import httpx
+from httpx import HTTPStatusError
 
 
 load_dotenv()
@@ -103,58 +104,77 @@ async def post_results(request: Request, city: str = Form(None)):
         raise HTTPException(
             status_code=500, detail="Tomorrow API key is not configured."
         )
-
-    try:
-        meteo_response = await fetch_json(
-            city,
-            "https://www.meteosource.com/api/v1/free/point?sections=current&",
-            METEO_API_KEY,
-            "key",
-            "place_id",
-        )
-        meteo_data = meteo_response["current"]["temperature"]
-    except (KeyError, HTTPError, RequestException) as e:
+    elif not UNSPLASH_API_KEY:
         raise HTTPException(
-            status_code=500, detail=f"Failed to fetch or parse MeteoAPI data: {e}"
+            status_code=500, detail="Tomorrow API key is not configured."
         )
 
     try:
-        tomorrow_response = await fetch_json(
-            city,
-            "https://api.tomorrow.io/v4/weather/realtime?",
-            TOMORROW_API_KEY,
-            "apikey",
-            "location",
-        )
-        tomorrow_data = tomorrow_response["data"]["values"]["temperature"]
-    except (KeyError, HTTPError, RequestException) as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to fetch or parse TomorrowAPI data: {e}"
-        )
+        try:
+            meteo_response = await fetch_json(
+                city,
+                "https://www.meteosource.com/api/v1/free/point?sections=current&",
+                METEO_API_KEY,
+                "key",
+                "place_id",
+            )
+            meteo_data = meteo_response["current"]["temperature"]
+        except (KeyError, HTTPError, RequestException) as e:
+            raise HTTPException(
+                status_code=500, detail=f"Failed to fetch or parse MeteoAPI data: {e}"
+            )
 
-    try:
-        weather_response = await fetch_json(
-            city,
-            "http://api.weatherapi.com/v1/current.json?",
-            WEATHER_API_KEY,
-            "key",
-            "q",
-        )
-        weather_data = weather_response["current"]["temp_c"]
-    except (KeyError, HTTPError, RequestException) as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to fetch or parse WeatherAPI data: {e}"
-        )
+        try:
+            tomorrow_response = await fetch_json(
+                city,
+                "https://api.tomorrow.io/v4/weather/realtime?",
+                TOMORROW_API_KEY,
+                "apikey",
+                "location",
+            )
+            tomorrow_data = tomorrow_response["data"]["values"]["temperature"]
+        except (KeyError, HTTPError, RequestException) as e:
+            raise HTTPException(
+                status_code=500, detail=f"Failed to fetch or parse TomorrowAPI data: {e}"
+            )
+
+        try:
+            weather_response = await fetch_json(
+                city,
+                "http://api.weatherapi.com/v1/current.json?",
+                WEATHER_API_KEY,
+                "key",
+                "q",
+            )
+            weather_data = weather_response["current"]["temp_c"]
+        except (KeyError, HTTPError, RequestException) as e:
+            raise HTTPException(
+                status_code=500, detail=f"Failed to fetch or parse WeatherAPI data: {e}"
+            )
+            
+        try:
+            unsplash_response = await fetch_photo(
+                city, f"https://api.unsplash.com/search/photos/?client_id={UNSPLASH_API_KEY}&"
+            )
+            unsplash_data = unsplash_response["results"][0]["urls"]["raw"]
+        except (KeyError, HTTPError, RequestException) as e:
+            raise HTTPException(
+                status_code=500, detail=f"Failed to fetch or parse Unsplash data: {e}"
+            )
         
-    try:
-        unsplash_response = await fetch_photo(
-            city, f"https://api.unsplash.com/search/photos/?client_id={UNSPLASH_API_KEY}&"
-        )
-        print(unsplash_response)
-        unsplash_data = unsplash_response["results"][0]["urls"]["raw"]
-    except (KeyError, HTTPError, RequestException) as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to fetch or parse Unsplash data: {e}"
+    except HTTPStatusError as http_err:
+        if http_err.response.status_code == 404:
+            error_message = f"The city '{city}' could not be found. Please check the city name and try again."
+            return templates.TemplateResponse(
+                "error.html", {"request": request, "detail": error_message}, status_code=404
+            )
+        else:
+            return templates.TemplateResponse(
+                "error.html", {"request": request, "detail": "An error occurred while fetching data. Please try again later."}, status_code=500
+            )
+    except Exception as e:
+        return templates.TemplateResponse(
+            "error.html", {"request": request, "detail": f"An unexpected error occurred: {e}"}, status_code=500
         )
 
     data = await create_data(request, city, meteo_data, tomorrow_data, weather_data, unsplash_data)
