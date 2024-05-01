@@ -1,0 +1,9 @@
+protoc.exe -I. --java_out=gen person.proto 
+protoc.exe -I. --java_out=gen --plugin=protoc-gen-grpc-java=protoc-gen-grpc-java-1.62.2-windows-x86_64.exe --grpc-java_out=gen calculator.proto 
+protoc.exe -I. --java_out=gen --plugin=protoc-gen-grpc-java=protoc-gen-grpc-java-1.62.2-windows-x86_64.exe --grpc-java_out=gen streaming.proto 
+
+
+protoc -I. --java_out=gen person.proto
+protoc -I. --java_out=gen --plugin=protoc-gen-grpc-java=protoc-gen-grpc-java-1.62.2-osx-aarch_64.exe --grpc-java_out=gen calculator.proto
+protoc -I. --java_out=gen --plugin=protoc-gen-grpc-java=protoc-gen-grpc-java-1.62.2-osx-aarch_64.exe --grpc-java_out=gen streaming.proto
+

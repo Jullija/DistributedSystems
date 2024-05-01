@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package event;
+
+option go_package = "example.com/myproject/client/myproject/proto";
+
+
+enum EventType {
+    UNKNOWN_TYPE = 0;
+    SPORT_EVENT = 1; //these fields are required to identify fields in binary (de)serialization
+    CONCERT = 2;
+    MEETING = 3;
+}
+
+enum Location {
+    UNKNOWN_LOCATION = 0;
+    CRACOW = 1;
+    LONDON = 2;
+    SEDZISZOW = 3;
+    ZURICH = 4;
+    LOS_ANGELES = 5;
+}
+
+message Event {
+    int32 event_id = 1;
+    EventType type = 2;
+    string description = 3;
+    int32 max_attendees = 5;
+    repeated int32 attendees_ids = 6;
+    Location location = 7;
+}
+
+
+message ClientConnectsRequest{
+    string client_name = 1;
+}
+
+message ClientConnectsResponse{
+    int32 client_id = 1;
+    repeated Event events = 2;
+}
+
+message ClientSubscribeLocationRequest{
+    int32 client_id = 1;
+    string client_name = 2;
+    Location location = 3;
+}
+
+
+message ClientSubscribeLocationResponse{
+    string client_name = 1;
+    repeated Event events_list = 2; //list of subscribed events
+    string text = 4;
+}
+
+
+
+
+
+
+// service to distinct on what client subscribe
+service EventService{
+
+    //client connects
+    rpc ClientConnects(ClientConnectsRequest) returns (ClientConnectsResponse){}
+
+
+    //client subscribe based on location
+    rpc ClientSubscribeLocation(ClientSubscribeLocationRequest) returns (ClientSubscribeLocationResponse) {}
+
+
+    //client subscribe based on type
+     //rpc ClientSubscribeType(ClientSubscribeLocationType) returns (ClientSubscribeLocationType) {}
+}
