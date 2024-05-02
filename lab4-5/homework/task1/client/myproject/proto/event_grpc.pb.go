@@ -21,6 +21,8 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	EventService_ClientConnects_FullMethodName          = "/event.EventService/ClientConnects"
 	EventService_ClientSubscribeLocation_FullMethodName = "/event.EventService/ClientSubscribeLocation"
+	EventService_ClientSubscribeType_FullMethodName     = "/event.EventService/ClientSubscribeType"
+	EventService_GetClientSubscriptions_FullMethodName  = "/event.EventService/GetClientSubscriptions"
 )
 
 // EventServiceClient is the client API for EventService service.
@@ -31,6 +33,10 @@ type EventServiceClient interface {
 	ClientConnects(ctx context.Context, in *ClientConnectsRequest, opts ...grpc.CallOption) (*ClientConnectsResponse, error)
 	// client subscribe based on location
 	ClientSubscribeLocation(ctx context.Context, in *ClientSubscribeLocationRequest, opts ...grpc.CallOption) (*ClientSubscribeLocationResponse, error)
+	// client subscribe based on type
+	ClientSubscribeType(ctx context.Context, in *ClientSubscribeTypeRequest, opts ...grpc.CallOption) (*ClientSubscribeTypeResponse, error)
+	// client's subscribed events
+	GetClientSubscriptions(ctx context.Context, in *ClientSubscriptionsRequest, opts ...grpc.CallOption) (*ClientSubscriptionsResponse, error)
 }
 
 type eventServiceClient struct {
@@ -59,6 +65,24 @@ func (c *eventServiceClient) ClientSubscribeLocation(ctx context.Context, in *Cl
 	return out, nil
 }
 
+func (c *eventServiceClient) ClientSubscribeType(ctx context.Context, in *ClientSubscribeTypeRequest, opts ...grpc.CallOption) (*ClientSubscribeTypeResponse, error) {
+	out := new(ClientSubscribeTypeResponse)
+	err := c.cc.Invoke(ctx, EventService_ClientSubscribeType_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventServiceClient) GetClientSubscriptions(ctx context.Context, in *ClientSubscriptionsRequest, opts ...grpc.CallOption) (*ClientSubscriptionsResponse, error) {
+	out := new(ClientSubscriptionsResponse)
+	err := c.cc.Invoke(ctx, EventService_GetClientSubscriptions_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EventServiceServer is the server API for EventService service.
 // All implementations must embed UnimplementedEventServiceServer
 // for forward compatibility
@@ -67,6 +91,10 @@ type EventServiceServer interface {
 	ClientConnects(context.Context, *ClientConnectsRequest) (*ClientConnectsResponse, error)
 	// client subscribe based on location
 	ClientSubscribeLocation(context.Context, *ClientSubscribeLocationRequest) (*ClientSubscribeLocationResponse, error)
+	// client subscribe based on type
+	ClientSubscribeType(context.Context, *ClientSubscribeTypeRequest) (*ClientSubscribeTypeResponse, error)
+	// client's subscribed events
+	GetClientSubscriptions(context.Context, *ClientSubscriptionsRequest) (*ClientSubscriptionsResponse, error)
 	mustEmbedUnimplementedEventServiceServer()
 }
 
@@ -79,6 +107,12 @@ func (UnimplementedEventServiceServer) ClientConnects(context.Context, *ClientCo
 }
 func (UnimplementedEventServiceServer) ClientSubscribeLocation(context.Context, *ClientSubscribeLocationRequest) (*ClientSubscribeLocationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ClientSubscribeLocation not implemented")
+}
+func (UnimplementedEventServiceServer) ClientSubscribeType(context.Context, *ClientSubscribeTypeRequest) (*ClientSubscribeTypeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ClientSubscribeType not implemented")
+}
+func (UnimplementedEventServiceServer) GetClientSubscriptions(context.Context, *ClientSubscriptionsRequest) (*ClientSubscriptionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetClientSubscriptions not implemented")
 }
 func (UnimplementedEventServiceServer) mustEmbedUnimplementedEventServiceServer() {}
 
@@ -129,6 +163,42 @@ func _EventService_ClientSubscribeLocation_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EventService_ClientSubscribeType_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ClientSubscribeTypeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventServiceServer).ClientSubscribeType(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: EventService_ClientSubscribeType_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventServiceServer).ClientSubscribeType(ctx, req.(*ClientSubscribeTypeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EventService_GetClientSubscriptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ClientSubscriptionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventServiceServer).GetClientSubscriptions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: EventService_GetClientSubscriptions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventServiceServer).GetClientSubscriptions(ctx, req.(*ClientSubscriptionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EventService_ServiceDesc is the grpc.ServiceDesc for EventService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -143,6 +213,14 @@ var EventService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ClientSubscribeLocation",
 			Handler:    _EventService_ClientSubscribeLocation_Handler,
+		},
+		{
+			MethodName: "ClientSubscribeType",
+			Handler:    _EventService_ClientSubscribeType_Handler,
+		},
+		{
+			MethodName: "GetClientSubscriptions",
+			Handler:    _EventService_GetClientSubscriptions_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

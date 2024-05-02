@@ -16,7 +16,6 @@ import (
 func mapLocation(input string) (proto.Location, bool) {
     switch input {
     case "CRACOW":
-        fmt.Print(proto.Location_CRACOW)
         return proto.Location_CRACOW, true
     case "LONDON":
         return proto.Location_LONDON, true
@@ -28,6 +27,40 @@ func mapLocation(input string) (proto.Location, bool) {
         return proto.Location_LOS_ANGELES, true
     default:
         return 0, false
+    }
+}
+
+func mapType(input string) (proto.EventType, bool) {
+    switch input {
+    case "SPORT_EVENT":
+        return proto.EventType_SPORT_EVENT, true
+    case "CONCERT":
+        return proto.EventType_CONCERT, true
+    case "MEETING":
+        return proto.EventType_MEETING, true
+    default:
+        return 0, false
+    }
+}
+
+func getClientSubscriptions(client proto.EventServiceClient, clientID int32) {
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+
+    req := &proto.ClientSubscriptionsRequest{ClientId: clientID}
+
+
+    resp, err := client.GetClientSubscriptions(ctx, req)
+    if err != nil {
+        log.Fatalf("Could not get subscriptions: %v", err)
+    }
+
+
+    fmt.Printf("Client %d is subscribed to the following events:\n", clientID)
+    for _, event := range resp.SubscribedEvents {
+        fmt.Printf("Event ID: %d, Type: %s, Location: %s, Description: %s, Max Attendees: %d\n",
+            event.EventId, proto.EventType_name[int32(event.Type)], proto.Location_name[int32(event.Location)], event.Description, event.MaxAttendees)
     }
 }
 
@@ -46,7 +79,7 @@ func parseLocation(argument string, client proto.EventServiceClient, clientId in
         fmt.Println("Invalid location. Please try again.")
         return
     }
-    fmt.Print(location)
+
     request := &proto.ClientSubscribeLocationRequest{
         ClientId:   int32(clientId),
         ClientName: clientName,
@@ -62,21 +95,48 @@ func parseLocation(argument string, client proto.EventServiceClient, clientId in
         return
     }
 
-    fmt.Printf("Response: %s\n", response.Text)
+
     for _, event := range response.EventsList {
         fmt.Printf("Event ID: %d, Type: %s, Location: %s\n", event.EventId, proto.EventType_name[int32(event.Type)], proto.Location_name[int32(event.Location)])
     }
 }
 
+
+func parseType(argument string, client proto.EventServiceClient, clientId int32, clientName string) {
+    eventType, ok := mapType(argument)
+    if !ok {
+        fmt.Println("Invalid type. Please try again.")
+        return
+    }
+    request := &proto.ClientSubscribeTypeRequest{
+        ClientId:   clientId,
+        ClientName: clientName,
+        Type:       eventType,
+    }
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    defer cancel()
+    response, err := client.ClientSubscribeType(ctx, request)
+    if err != nil {
+        log.Printf("Error subscribing to type: %v", err)
+        return
+    }
+
+    for _, event := range response.EventsList {
+        fmt.Printf("Event ID: %d, Type: %s, Location: %s\n", event.EventId, proto.EventType_name[int32(event.Type)], proto.Location_name[int32(event.Location)])
+    }
+}
+
+
 func getInputs(client proto.EventServiceClient, clientId int32, clientName string) {
     reader := bufio.NewScanner(os.Stdin)
     for {
-        fmt.Print("<subLocation location_name>, <subType event_type>, <subId id>")
+        fmt.Print("<subLocation location_name> -> location subscribe, <subType event_type> -> type subscribe, <subId id> -> id subscribe, <subCheck> -> see you subscription\n")
+        fmt.Print("Command: ")
         if reader.Scan() {
             input := reader.Text()
             parts := strings.Fields(input)
-            if len(parts) < 2 {
-                fmt.Println("Invalid command format. Use <subLocation location_name>, <subType event_type>, <subId id>.")
+            if len(parts) < 2 && parts[0] != "subCheck" {
+                fmt.Println("Invalid command format. Use <subLocation location_name>, <subType event_type>, <subId id>, <subCheck>.")
                 continue
             }
 
@@ -87,10 +147,12 @@ func getInputs(client proto.EventServiceClient, clientId int32, clientName strin
             switch command{
             case "subLocation":
                 parseLocation(argument, client, clientId, clientName)
-//             case "subType":
-//                 parseType(argument, client, clientId, clientName)
+            case "subType":
+                parseType(argument, client, clientId, clientName)
 //             case "subId":
 //                 parseId(argument, client, clientId, clientName)
+            case "subCheck":
+                getClientSubscriptions(client, clientId)
             case "quit":
                 fmt.Println("Closing connection. Thank you for listening to my TedTalk.")
                 return
@@ -121,7 +183,7 @@ func main() {
         log.Fatalf("could not connect: %v", err)
     }
     log.Printf("Client ID: %d", r.ClientId)
-    log.Printf("Events: %v", r.Events)
+
 
     getInputs(c, r.ClientId, clientName)
 }

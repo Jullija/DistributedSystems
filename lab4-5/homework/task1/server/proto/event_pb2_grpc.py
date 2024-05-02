@@ -50,6 +50,16 @@ class EventServiceStub(object):
                 request_serializer=proto_dot_event__pb2.ClientSubscribeLocationRequest.SerializeToString,
                 response_deserializer=proto_dot_event__pb2.ClientSubscribeLocationResponse.FromString,
                 _registered_method=True)
+        self.ClientSubscribeType = channel.unary_unary(
+                '/event.EventService/ClientSubscribeType',
+                request_serializer=proto_dot_event__pb2.ClientSubscribeTypeRequest.SerializeToString,
+                response_deserializer=proto_dot_event__pb2.ClientSubscribeTypeResponse.FromString,
+                _registered_method=True)
+        self.GetClientSubscriptions = channel.unary_unary(
+                '/event.EventService/GetClientSubscriptions',
+                request_serializer=proto_dot_event__pb2.ClientSubscriptionsRequest.SerializeToString,
+                response_deserializer=proto_dot_event__pb2.ClientSubscriptionsResponse.FromString,
+                _registered_method=True)
 
 
 class EventServiceServicer(object):
@@ -70,6 +80,20 @@ class EventServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ClientSubscribeType(self, request, context):
+        """client subscribe based on type
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetClientSubscriptions(self, request, context):
+        """client's subscribed events
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_EventServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -82,6 +106,16 @@ def add_EventServiceServicer_to_server(servicer, server):
                     servicer.ClientSubscribeLocation,
                     request_deserializer=proto_dot_event__pb2.ClientSubscribeLocationRequest.FromString,
                     response_serializer=proto_dot_event__pb2.ClientSubscribeLocationResponse.SerializeToString,
+            ),
+            'ClientSubscribeType': grpc.unary_unary_rpc_method_handler(
+                    servicer.ClientSubscribeType,
+                    request_deserializer=proto_dot_event__pb2.ClientSubscribeTypeRequest.FromString,
+                    response_serializer=proto_dot_event__pb2.ClientSubscribeTypeResponse.SerializeToString,
+            ),
+            'GetClientSubscriptions': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetClientSubscriptions,
+                    request_deserializer=proto_dot_event__pb2.ClientSubscriptionsRequest.FromString,
+                    response_serializer=proto_dot_event__pb2.ClientSubscriptionsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -138,6 +172,60 @@ class EventService(object):
             '/event.EventService/ClientSubscribeLocation',
             proto_dot_event__pb2.ClientSubscribeLocationRequest.SerializeToString,
             proto_dot_event__pb2.ClientSubscribeLocationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ClientSubscribeType(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/event.EventService/ClientSubscribeType',
+            proto_dot_event__pb2.ClientSubscribeTypeRequest.SerializeToString,
+            proto_dot_event__pb2.ClientSubscribeTypeResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetClientSubscriptions(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/event.EventService/GetClientSubscriptions',
+            proto_dot_event__pb2.ClientSubscriptionsRequest.SerializeToString,
+            proto_dot_event__pb2.ClientSubscriptionsResponse.FromString,
             options,
             channel_credentials,
             insecure,

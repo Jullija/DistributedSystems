@@ -9,12 +9,17 @@ from proto import event_pb2, event_pb2_grpc
 
 class EventServer(event_pb2_grpc.EventServiceServicer):
     def __init__(self):
-        self.clients = {}
+        self.clients = {} #{client_id: client_name}
         self.next_client_id = 1
-        self.events = []
+        self.events = [] #every event
+        self.client_subscriptions = {} #{client_id: [event1, event2]}
 
     def addEvent(self, event_to_add):
         self.events.append(event_to_add)
+
+    def GetClientSubscriptions(self, request, context):
+        clients_events = self.client_subscriptions.get(request.client_id, [])
+        return event_pb2.ClientSubscriptionsResponse(client_id = request.client_id, subscribed_events=clients_events)
 
     def ClientConnects(self, request, context):
         client_id = self.next_client_id
@@ -22,6 +27,7 @@ class EventServer(event_pb2_grpc.EventServiceServicer):
 
         self.next_client_id += 1
         self.clients[client_id] = request.client_name
+        self.client_subscriptions[client_id] = []
 
         return event_pb2.ClientConnectsResponse(client_id=client_id, events=self.events)
 
@@ -36,6 +42,7 @@ class EventServer(event_pb2_grpc.EventServiceServicer):
                 subscribed = True
                 subscribed_events.append(event)
                 event.attendees_ids.append(client_id)
+                self.client_subscriptions[client_id].append(event)
 
 
 
@@ -43,6 +50,25 @@ class EventServer(event_pb2_grpc.EventServiceServicer):
             return event_pb2.ClientSubscribeLocationResponse(client_id=client_id, events_list=subscribed_events, text=f"Subscribed for {subscribed_events}")
         else:
             return event_pb2.ClientSubscribeLocationResponse(client_id=client_id, events_list=[], text="Didn't subscribe for any events")
+
+    def ClientSubscribeType(self, request, context):
+        client_id = request.client_id
+        event_type = request.type
+        subscribed_events = []
+        subscribed = False
+        for event in self.events:
+            if (event_type == event.type and client_id not in event.attendees_ids and event.max_attendees >= len(event.attendees_ids) + 1):
+                subscribed = True
+                subscribed_events.append(event)
+                event.attendees_ids.append(client_id)
+                self.client_subscriptions[client_id].append(event)
+
+
+
+        if subscribed:
+            return event_pb2.ClientSubscribeTypeResponse(client_id=client_id, events_list=subscribed_events, text=f"Subscribed for {subscribed_events}")
+        else:
+            return event_pb2.ClientSubscribeTypeResponse(client_id=client_id, events_list=[], text="Didn't subscribe for any events")
 
 
 

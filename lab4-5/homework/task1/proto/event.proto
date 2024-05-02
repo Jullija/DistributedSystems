@@ -54,7 +54,28 @@ message ClientSubscribeLocationResponse{
     string text = 4;
 }
 
+message ClientSubscribeTypeRequest{
+    int32 client_id = 1;
+    string client_name = 2;
+    EventType type = 3;
+}
 
+
+message ClientSubscribeTypeResponse{
+    int32 client_id = 1;
+    string client_name = 2;
+    repeated Event events_list = 3; //list of subscribed events
+    string text = 4;
+}
+
+message ClientSubscriptionsRequest {
+    int32 client_id = 1;
+}
+
+message ClientSubscriptionsResponse {
+    int32 client_id = 1;
+    repeated Event subscribed_events = 2;  // List of subscribed event IDs
+}
 
 
 
@@ -65,11 +86,12 @@ service EventService{
     //client connects
     rpc ClientConnects(ClientConnectsRequest) returns (ClientConnectsResponse){}
 
-
     //client subscribe based on location
     rpc ClientSubscribeLocation(ClientSubscribeLocationRequest) returns (ClientSubscribeLocationResponse) {}
 
-
     //client subscribe based on type
-     //rpc ClientSubscribeType(ClientSubscribeLocationType) returns (ClientSubscribeLocationType) {}
+     rpc ClientSubscribeType(ClientSubscribeTypeRequest) returns (ClientSubscribeTypeResponse) {}
+
+    //client's subscribed events
+    rpc GetClientSubscriptions(ClientSubscriptionsRequest) returns (ClientSubscriptionsResponse);
 }
