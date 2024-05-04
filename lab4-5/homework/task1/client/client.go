@@ -151,13 +151,13 @@ func parseType(argument string, client proto.EventServiceClient, clientId int32,
 func getInputs(client proto.EventServiceClient, clientId int32, clientName string) {
     reader := bufio.NewScanner(os.Stdin)
     for {
-        fmt.Print("<subLocation location_name> -> location subscribe, <subType event_type> -> type subscribe, <subId id> -> id subscribe, <subCheck> -> see you subscription\n")
+        fmt.Print("<subLocation location_name> -> location subscribe, <subType event_type> -> type subscribe, <subCheck> -> see you subscription\n")
         fmt.Print("Command: ")
         if reader.Scan() {
             input := reader.Text()
             parts := strings.Fields(input)
             if len(parts) < 2 && parts[0] != "subCheck" {
-                fmt.Println("Invalid command format. Use <subLocation location_name>, <subType event_type>, <subId id>, <subCheck>.")
+                fmt.Println("Invalid command format. Use <subLocation location_name>, <subType event_type>, <subCheck>.")
                 continue
             }
 
@@ -170,8 +170,6 @@ func getInputs(client proto.EventServiceClient, clientId int32, clientName strin
                 parseLocation(argument, client, clientId, clientName)
             case "subType":
                 parseType(argument, client, clientId, clientName)
-//             case "subId":
-//                 parseId(argument, client, clientId, clientName)
             case "subCheck":
                 getClientSubscriptions(client, clientId)
             case "quit":

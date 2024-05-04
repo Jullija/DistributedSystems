@@ -2,7 +2,8 @@ from concurrent import futures
 from random import choice, random
 from queue import Queue, Empty
 import threading
-
+import pickle
+import os
 import grpc
 import time
 
@@ -27,7 +28,7 @@ class EventServer(event_pb2_grpc.EventServiceServicer):
         try:
             while context.is_active():
                 try:
-                    message = queue.get(timeout=30)
+                    message = queue.get(timeout=10)
                     yield event_pb2.NotificationResponse(message=message)
                 except Empty:
                     continue
@@ -49,13 +50,18 @@ class EventServer(event_pb2_grpc.EventServiceServicer):
 
     def ClientConnects(self, request, context):
         with self.events_lock:
-            client_id = self.next_client_id
-            print(f"Welcome aboard {request.client_name}! Your client id is {client_id}")
+            client_name = request.client_name.strip()
+            if client_name in self.clients.values():
+                client_id = list(self.clients.values()).index(client_name) + 1
+                print(f"Welcome back {client_name}! Your client id is {client_id}")
+            else:
+                client_id = self.next_client_id
+                print(f"Welcome aboard {client_name}! Your client id is {client_id}")
 
-            self.next_client_id += 1
-            self.clients[client_id] = request.client_name
-            self.client_subscriptions[client_id] = []
-            self.client_notification_channels[client_id] = Queue()
+                self.next_client_id += 1
+                self.clients[client_id] = client_name
+                self.client_subscriptions[client_id] = []
+                self.client_notification_channels[client_id] = Queue()
 
             return event_pb2.ClientConnectsResponse(client_id=client_id, events=self.events)
 
@@ -107,7 +113,7 @@ def update_events(server):
     location_type_values = [loc for loc in event_pb2.Location.values() if loc != 0]
 
     while True:
-        time.sleep(30)
+        time.sleep(10)
         with server.events_lock:
             if server.events:
                 event = choice(server.events)
@@ -128,6 +134,39 @@ def notify_subscribed_clients(server, event):
         if client_id in server.client_notification_channels:
             server.client_notification_channels[client_id].put_nowait(message)
 
+
+def save_server_state(server):
+    try:
+        with open('server_state.pkl', 'wb') as f:
+            pickle.dump({
+                'clients': server.clients,
+                'next_client_id': server.next_client_id,
+                'events': server.events,
+                'client_subscriptions': server.client_subscriptions
+            }, f)
+        print("Server state saved successfully.")
+    except Exception as e:
+        print("Error saving server state:", e)
+
+def load_server_state(server):
+    state_file = 'server_state.pkl'
+    if os.path.exists(state_file):
+        try:
+            file_time = os.path.getmtime(state_file)
+            if (time.time() - file_time) <= 10:  # Check if the file was saved less than 10 seconds ago
+                with open(state_file, 'rb') as f:
+                    state = pickle.load(f)
+                    server.clients = state['clients']
+                    server.next_client_id = state['next_client_id']
+                    server.events = state['events']
+                    server.client_subscriptions = state['client_subscriptions']
+                    print("Server state loaded successfully.")
+            else:
+                print("Saved state is too old, starting fresh.")
+        except Exception as e:
+            print("Error loading server state:", e)
+    else:
+        print("No saved state found, starting fresh.")
 
 def create_events(num_events, server):
     event_type_values = [etype for etype in event_pb2.EventType.values() if etype != 0]
@@ -151,11 +190,12 @@ def create_events(num_events, server):
 
 def serve():
     event_server = EventServer()
+    load_server_state(event_server)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     event_pb2_grpc.add_EventServiceServicer_to_server(event_server, server)
     server.add_insecure_port('[::]:50051')
     server.start()
-    create_events(5, event_server)
+    create_events(5, event_server) if not event_server.events else None
     update_thread = threading.Thread(target=update_events, args=(event_server,), daemon=True)
     update_thread.start()
     print("Server started at port 50051")
@@ -164,8 +204,10 @@ def serve():
     try:
         server.wait_for_termination()
     except KeyboardInterrupt:
+        save_server_state(event_server)
         server.stop(0)
         update_thread.join()
+
 
 
 if __name__ == '__main__':
