@@ -27,13 +27,14 @@ In task1 run
 
 ```protoc --proto_path=proto --go_out=client/myproject/proto --go-grpc_out=client/myproject/proto --go_opt=paths=source_relative --go-grpc_opt=paths=source_relative proto/event.proto```
 
-then in server directory run
+then in server directory run server
 
 ```python server.py```
 
-and in client directory
+in task1 run client
 
-```go run client.go```
+```go build -o client_app ./client```
+```./client_app```
 
 
 

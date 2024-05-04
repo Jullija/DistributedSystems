@@ -77,6 +77,14 @@ message ClientSubscriptionsResponse {
     repeated Event subscribed_events = 2;  // List of subscribed event IDs
 }
 
+message SubscriptionRequest {
+    int32 client_id = 1;
+}
+
+message NotificationResponse {
+    string message = 1;
+}
+
 
 
 
@@ -94,4 +102,7 @@ service EventService{
 
     //client's subscribed events
     rpc GetClientSubscriptions(ClientSubscriptionsRequest) returns (ClientSubscriptionsResponse);
+
+    //notification
+    rpc SubscribeToNotifications(SubscriptionRequest) returns (stream NotificationResponse);
 }

@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11proto/event.proto\x12\x05\x65vent\"\x9f\x01\n\x05\x45vent\x12\x10\n\x08\x65vent_id\x18\x01 \x01(\x05\x12\x1e\n\x04type\x18\x02 \x01(\x0e\x32\x10.event.EventType\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x15\n\rmax_attendees\x18\x05 \x01(\x05\x12\x15\n\rattendees_ids\x18\x06 \x03(\x05\x12!\n\x08location\x18\x07 \x01(\x0e\x32\x0f.event.Location\",\n\x15\x43lientConnectsRequest\x12\x13\n\x0b\x63lient_name\x18\x01 \x01(\t\"I\n\x16\x43lientConnectsResponse\x12\x11\n\tclient_id\x18\x01 \x01(\x05\x12\x1c\n\x06\x65vents\x18\x02 \x03(\x0b\x32\x0c.event.Event\"k\n\x1e\x43lientSubscribeLocationRequest\x12\x11\n\tclient_id\x18\x01 \x01(\x05\x12\x13\n\x0b\x63lient_name\x18\x02 \x01(\t\x12!\n\x08location\x18\x03 \x01(\x0e\x32\x0f.event.Location\"z\n\x1f\x43lientSubscribeLocationResponse\x12\x11\n\tclient_id\x18\x01 \x01(\x05\x12\x13\n\x0b\x63lient_name\x18\x02 \x01(\t\x12!\n\x0b\x65vents_list\x18\x03 \x03(\x0b\x32\x0c.event.Event\x12\x0c\n\x04text\x18\x04 \x01(\t\"d\n\x1a\x43lientSubscribeTypeRequest\x12\x11\n\tclient_id\x18\x01 \x01(\x05\x12\x13\n\x0b\x63lient_name\x18\x02 \x01(\t\x12\x1e\n\x04type\x18\x03 \x01(\x0e\x32\x10.event.EventType\"v\n\x1b\x43lientSubscribeTypeResponse\x12\x11\n\tclient_id\x18\x01 \x01(\x05\x12\x13\n\x0b\x63lient_name\x18\x02 \x01(\t\x12!\n\x0b\x65vents_list\x18\x03 \x03(\x0b\x32\x0c.event.Event\x12\x0c\n\x04text\x18\x04 \x01(\t\"/\n\x1a\x43lientSubscriptionsRequest\x12\x11\n\tclient_id\x18\x01 \x01(\x05\"Y\n\x1b\x43lientSubscriptionsResponse\x12\x11\n\tclient_id\x18\x01 \x01(\x05\x12\'\n\x11subscribed_events\x18\x02 \x03(\x0b\x32\x0c.event.Event*H\n\tEventType\x12\x10\n\x0cUNKNOWN_TYPE\x10\x00\x12\x0f\n\x0bSPORT_EVENT\x10\x01\x12\x0b\n\x07\x43ONCERT\x10\x02\x12\x0b\n\x07MEETING\x10\x03*d\n\x08Location\x12\x14\n\x10UNKNOWN_LOCATION\x10\x00\x12\n\n\x06\x43RACOW\x10\x01\x12\n\n\x06LONDON\x10\x02\x12\r\n\tSEDZISZOW\x10\x03\x12\n\n\x06ZURICH\x10\x04\x12\x0f\n\x0bLOS_ANGELES\x10\x05\x32\x8c\x03\n\x0c\x45ventService\x12O\n\x0e\x43lientConnects\x12\x1c.event.ClientConnectsRequest\x1a\x1d.event.ClientConnectsResponse\"\x00\x12j\n\x17\x43lientSubscribeLocation\x12%.event.ClientSubscribeLocationRequest\x1a&.event.ClientSubscribeLocationResponse\"\x00\x12^\n\x13\x43lientSubscribeType\x12!.event.ClientSubscribeTypeRequest\x1a\".event.ClientSubscribeTypeResponse\"\x00\x12_\n\x16GetClientSubscriptions\x12!.event.ClientSubscriptionsRequest\x1a\".event.ClientSubscriptionsResponseB.Z,example.com/myproject/client/myproject/protob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11proto/event.proto\x12\x05\x65vent\"\x9f\x01\n\x05\x45vent\x12\x10\n\x08\x65vent_id\x18\x01 \x01(\x05\x12\x1e\n\x04type\x18\x02 \x01(\x0e\x32\x10.event.EventType\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x15\n\rmax_attendees\x18\x05 \x01(\x05\x12\x15\n\rattendees_ids\x18\x06 \x03(\x05\x12!\n\x08location\x18\x07 \x01(\x0e\x32\x0f.event.Location\",\n\x15\x43lientConnectsRequest\x12\x13\n\x0b\x63lient_name\x18\x01 \x01(\t\"I\n\x16\x43lientConnectsResponse\x12\x11\n\tclient_id\x18\x01 \x01(\x05\x12\x1c\n\x06\x65vents\x18\x02 \x03(\x0b\x32\x0c.event.Event\"k\n\x1e\x43lientSubscribeLocationRequest\x12\x11\n\tclient_id\x18\x01 \x01(\x05\x12\x13\n\x0b\x63lient_name\x18\x02 \x01(\t\x12!\n\x08location\x18\x03 \x01(\x0e\x32\x0f.event.Location\"z\n\x1f\x43lientSubscribeLocationResponse\x12\x11\n\tclient_id\x18\x01 \x01(\x05\x12\x13\n\x0b\x63lient_name\x18\x02 \x01(\t\x12!\n\x0b\x65vents_list\x18\x03 \x03(\x0b\x32\x0c.event.Event\x12\x0c\n\x04text\x18\x04 \x01(\t\"d\n\x1a\x43lientSubscribeTypeRequest\x12\x11\n\tclient_id\x18\x01 \x01(\x05\x12\x13\n\x0b\x63lient_name\x18\x02 \x01(\t\x12\x1e\n\x04type\x18\x03 \x01(\x0e\x32\x10.event.EventType\"v\n\x1b\x43lientSubscribeTypeResponse\x12\x11\n\tclient_id\x18\x01 \x01(\x05\x12\x13\n\x0b\x63lient_name\x18\x02 \x01(\t\x12!\n\x0b\x65vents_list\x18\x03 \x03(\x0b\x32\x0c.event.Event\x12\x0c\n\x04text\x18\x04 \x01(\t\"/\n\x1a\x43lientSubscriptionsRequest\x12\x11\n\tclient_id\x18\x01 \x01(\x05\"Y\n\x1b\x43lientSubscriptionsResponse\x12\x11\n\tclient_id\x18\x01 \x01(\x05\x12\'\n\x11subscribed_events\x18\x02 \x03(\x0b\x32\x0c.event.Event\"(\n\x13SubscriptionRequest\x12\x11\n\tclient_id\x18\x01 \x01(\x05\"\'\n\x14NotificationResponse\x12\x0f\n\x07message\x18\x01 \x01(\t*H\n\tEventType\x12\x10\n\x0cUNKNOWN_TYPE\x10\x00\x12\x0f\n\x0bSPORT_EVENT\x10\x01\x12\x0b\n\x07\x43ONCERT\x10\x02\x12\x0b\n\x07MEETING\x10\x03*d\n\x08Location\x12\x14\n\x10UNKNOWN_LOCATION\x10\x00\x12\n\n\x06\x43RACOW\x10\x01\x12\n\n\x06LONDON\x10\x02\x12\r\n\tSEDZISZOW\x10\x03\x12\n\n\x06ZURICH\x10\x04\x12\x0f\n\x0bLOS_ANGELES\x10\x05\x32\xe3\x03\n\x0c\x45ventService\x12O\n\x0e\x43lientConnects\x12\x1c.event.ClientConnectsRequest\x1a\x1d.event.ClientConnectsResponse\"\x00\x12j\n\x17\x43lientSubscribeLocation\x12%.event.ClientSubscribeLocationRequest\x1a&.event.ClientSubscribeLocationResponse\"\x00\x12^\n\x13\x43lientSubscribeType\x12!.event.ClientSubscribeTypeRequest\x1a\".event.ClientSubscribeTypeResponse\"\x00\x12_\n\x16GetClientSubscriptions\x12!.event.ClientSubscriptionsRequest\x1a\".event.ClientSubscriptionsResponse\x12U\n\x18SubscribeToNotifications\x12\x1a.event.SubscriptionRequest\x1a\x1b.event.NotificationResponse0\x01\x42.Z,example.com/myproject/client/myproject/protob\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -22,10 +22,10 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'proto.event_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z,example.com/myproject/client/myproject/proto'
-  _globals['_EVENTTYPE']._serialized_start=906
-  _globals['_EVENTTYPE']._serialized_end=978
-  _globals['_LOCATION']._serialized_start=980
-  _globals['_LOCATION']._serialized_end=1080
+  _globals['_EVENTTYPE']._serialized_start=989
+  _globals['_EVENTTYPE']._serialized_end=1061
+  _globals['_LOCATION']._serialized_start=1063
+  _globals['_LOCATION']._serialized_end=1163
   _globals['_EVENT']._serialized_start=29
   _globals['_EVENT']._serialized_end=188
   _globals['_CLIENTCONNECTSREQUEST']._serialized_start=190
@@ -44,6 +44,10 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CLIENTSUBSCRIPTIONSREQUEST']._serialized_end=813
   _globals['_CLIENTSUBSCRIPTIONSRESPONSE']._serialized_start=815
   _globals['_CLIENTSUBSCRIPTIONSRESPONSE']._serialized_end=904
-  _globals['_EVENTSERVICE']._serialized_start=1083
-  _globals['_EVENTSERVICE']._serialized_end=1479
+  _globals['_SUBSCRIPTIONREQUEST']._serialized_start=906
+  _globals['_SUBSCRIPTIONREQUEST']._serialized_end=946
+  _globals['_NOTIFICATIONRESPONSE']._serialized_start=948
+  _globals['_NOTIFICATIONRESPONSE']._serialized_end=987
+  _globals['_EVENTSERVICE']._serialized_start=1166
+  _globals['_EVENTSERVICE']._serialized_end=1649
 # @@protoc_insertion_point(module_scope)

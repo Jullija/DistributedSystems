@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	EventService_ClientConnects_FullMethodName          = "/event.EventService/ClientConnects"
-	EventService_ClientSubscribeLocation_FullMethodName = "/event.EventService/ClientSubscribeLocation"
-	EventService_ClientSubscribeType_FullMethodName     = "/event.EventService/ClientSubscribeType"
-	EventService_GetClientSubscriptions_FullMethodName  = "/event.EventService/GetClientSubscriptions"
+	EventService_ClientConnects_FullMethodName           = "/event.EventService/ClientConnects"
+	EventService_ClientSubscribeLocation_FullMethodName  = "/event.EventService/ClientSubscribeLocation"
+	EventService_ClientSubscribeType_FullMethodName      = "/event.EventService/ClientSubscribeType"
+	EventService_GetClientSubscriptions_FullMethodName   = "/event.EventService/GetClientSubscriptions"
+	EventService_SubscribeToNotifications_FullMethodName = "/event.EventService/SubscribeToNotifications"
 )
 
 // EventServiceClient is the client API for EventService service.
@@ -37,6 +38,8 @@ type EventServiceClient interface {
 	ClientSubscribeType(ctx context.Context, in *ClientSubscribeTypeRequest, opts ...grpc.CallOption) (*ClientSubscribeTypeResponse, error)
 	// client's subscribed events
 	GetClientSubscriptions(ctx context.Context, in *ClientSubscriptionsRequest, opts ...grpc.CallOption) (*ClientSubscriptionsResponse, error)
+	// notification
+	SubscribeToNotifications(ctx context.Context, in *SubscriptionRequest, opts ...grpc.CallOption) (EventService_SubscribeToNotificationsClient, error)
 }
 
 type eventServiceClient struct {
@@ -83,6 +86,38 @@ func (c *eventServiceClient) GetClientSubscriptions(ctx context.Context, in *Cli
 	return out, nil
 }
 
+func (c *eventServiceClient) SubscribeToNotifications(ctx context.Context, in *SubscriptionRequest, opts ...grpc.CallOption) (EventService_SubscribeToNotificationsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &EventService_ServiceDesc.Streams[0], EventService_SubscribeToNotifications_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &eventServiceSubscribeToNotificationsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type EventService_SubscribeToNotificationsClient interface {
+	Recv() (*NotificationResponse, error)
+	grpc.ClientStream
+}
+
+type eventServiceSubscribeToNotificationsClient struct {
+	grpc.ClientStream
+}
+
+func (x *eventServiceSubscribeToNotificationsClient) Recv() (*NotificationResponse, error) {
+	m := new(NotificationResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // EventServiceServer is the server API for EventService service.
 // All implementations must embed UnimplementedEventServiceServer
 // for forward compatibility
@@ -95,6 +130,8 @@ type EventServiceServer interface {
 	ClientSubscribeType(context.Context, *ClientSubscribeTypeRequest) (*ClientSubscribeTypeResponse, error)
 	// client's subscribed events
 	GetClientSubscriptions(context.Context, *ClientSubscriptionsRequest) (*ClientSubscriptionsResponse, error)
+	// notification
+	SubscribeToNotifications(*SubscriptionRequest, EventService_SubscribeToNotificationsServer) error
 	mustEmbedUnimplementedEventServiceServer()
 }
 
@@ -113,6 +150,9 @@ func (UnimplementedEventServiceServer) ClientSubscribeType(context.Context, *Cli
 }
 func (UnimplementedEventServiceServer) GetClientSubscriptions(context.Context, *ClientSubscriptionsRequest) (*ClientSubscriptionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetClientSubscriptions not implemented")
+}
+func (UnimplementedEventServiceServer) SubscribeToNotifications(*SubscriptionRequest, EventService_SubscribeToNotificationsServer) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribeToNotifications not implemented")
 }
 func (UnimplementedEventServiceServer) mustEmbedUnimplementedEventServiceServer() {}
 
@@ -199,6 +239,27 @@ func _EventService_GetClientSubscriptions_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EventService_SubscribeToNotifications_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(SubscriptionRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(EventServiceServer).SubscribeToNotifications(m, &eventServiceSubscribeToNotificationsServer{stream})
+}
+
+type EventService_SubscribeToNotificationsServer interface {
+	Send(*NotificationResponse) error
+	grpc.ServerStream
+}
+
+type eventServiceSubscribeToNotificationsServer struct {
+	grpc.ServerStream
+}
+
+func (x *eventServiceSubscribeToNotificationsServer) Send(m *NotificationResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // EventService_ServiceDesc is the grpc.ServiceDesc for EventService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -223,6 +284,12 @@ var EventService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _EventService_GetClientSubscriptions_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "SubscribeToNotifications",
+			Handler:       _EventService_SubscribeToNotifications_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "event.proto",
 }

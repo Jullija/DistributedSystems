@@ -8,6 +8,7 @@ import (
     "os"
     "strings"
     "time"
+    "io"
 
     "google.golang.org/grpc"
     proto "example.com/myproject/client/myproject/proto"
@@ -40,6 +41,26 @@ func mapType(input string) (proto.EventType, bool) {
         return proto.EventType_MEETING, true
     default:
         return 0, false
+    }
+}
+
+func receiveNotifications(client proto.EventServiceClient, clientID int32) {
+    req := &proto.SubscriptionRequest{ClientId: clientID}
+    stream, err := client.SubscribeToNotifications(context.Background(), req)
+    if err != nil {
+        log.Fatalf("Error subscribing to notifications: %v", err)
+        return
+    }
+    for {
+        notification, err := stream.Recv()
+        if err == io.EOF {
+            break  // Stream closed
+        }
+        if err != nil {
+            log.Fatalf("Error receiving notification: %v", err)
+            return
+        }
+        fmt.Printf("Notification: %s\n", notification.Message)
     }
 }
 
@@ -185,6 +206,9 @@ func main() {
     log.Printf("Client ID: %d", r.ClientId)
 
 
+    go receiveNotifications(c, r.ClientId)
+
+    // Interact with the user to subscribe/unsubscribe etc.
     getInputs(c, r.ClientId, clientName)
 }
 

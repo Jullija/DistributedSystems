@@ -60,6 +60,11 @@ class EventServiceStub(object):
                 request_serializer=proto_dot_event__pb2.ClientSubscriptionsRequest.SerializeToString,
                 response_deserializer=proto_dot_event__pb2.ClientSubscriptionsResponse.FromString,
                 _registered_method=True)
+        self.SubscribeToNotifications = channel.unary_stream(
+                '/event.EventService/SubscribeToNotifications',
+                request_serializer=proto_dot_event__pb2.SubscriptionRequest.SerializeToString,
+                response_deserializer=proto_dot_event__pb2.NotificationResponse.FromString,
+                _registered_method=True)
 
 
 class EventServiceServicer(object):
@@ -94,6 +99,13 @@ class EventServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def SubscribeToNotifications(self, request, context):
+        """notification
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_EventServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -116,6 +128,11 @@ def add_EventServiceServicer_to_server(servicer, server):
                     servicer.GetClientSubscriptions,
                     request_deserializer=proto_dot_event__pb2.ClientSubscriptionsRequest.FromString,
                     response_serializer=proto_dot_event__pb2.ClientSubscriptionsResponse.SerializeToString,
+            ),
+            'SubscribeToNotifications': grpc.unary_stream_rpc_method_handler(
+                    servicer.SubscribeToNotifications,
+                    request_deserializer=proto_dot_event__pb2.SubscriptionRequest.FromString,
+                    response_serializer=proto_dot_event__pb2.NotificationResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -226,6 +243,33 @@ class EventService(object):
             '/event.EventService/GetClientSubscriptions',
             proto_dot_event__pb2.ClientSubscriptionsRequest.SerializeToString,
             proto_dot_event__pb2.ClientSubscriptionsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def SubscribeToNotifications(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/event.EventService/SubscribeToNotifications',
+            proto_dot_event__pb2.SubscriptionRequest.SerializeToString,
+            proto_dot_event__pb2.NotificationResponse.FromString,
             options,
             channel_credentials,
             insecure,
