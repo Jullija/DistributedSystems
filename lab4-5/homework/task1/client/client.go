@@ -10,6 +10,7 @@ import (
     "time"
     "io"
 
+    "google.golang.org/grpc/keepalive"
     "google.golang.org/grpc"
     proto "example.com/myproject/client/myproject/proto"
 )
@@ -185,7 +186,22 @@ func getInputs(client proto.EventServiceClient, clientId int32, clientName strin
 
 
 func main() {
-    conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure(), grpc.WithBlock())
+   serverOptions := []grpc.DialOption{
+		grpc.WithInsecure(),
+		grpc.WithBlock(),
+		grpc.WithKeepaliveParams(
+			keepalive.ClientParameters{
+				Time:                60 * time.Second, // Interval for keepalive ping (60 seconds)
+				Timeout:             30 * time.Second, // Timeout for ping response (30 seconds)
+				PermitWithoutStream: true,             // Allow pings even when there are no calls
+			}),
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallRecvMsgSize(1024*1024*10), // Max message receive size 10MB
+			grpc.MaxCallSendMsgSize(1024*1024*10), // Max message send size 10MB
+		),
+	}
+
+    conn, err := grpc.Dial("localhost:50051", serverOptions...)
     if err != nil {
         log.Fatalf("did not connect: %v", err)
     }
