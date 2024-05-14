@@ -22,11 +22,26 @@ public class Z1_Producer {
         String QUEUE_NAME = "queue1";
         channel.queueDeclare(QUEUE_NAME, false, false, false, null);        
 
-        // producer (publish msg)
-        String message = "Hello world!";
+        // 1A
 
-        channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
-        System.out.println("Sent: " + message);
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String message;
+
+        System.out.println("Enter your messages. Type 'exit' to quit.");
+
+        while (true) {
+            System.out.print("Enter message: ");
+            message = br.readLine();
+
+            // exit loop if user types 'exit'
+            if ("exit".equalsIgnoreCase(message)) {
+                break;
+            }
+
+            channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
+            System.out.println("Sent: " + message);
+        }
+
 
         // close
         channel.close();

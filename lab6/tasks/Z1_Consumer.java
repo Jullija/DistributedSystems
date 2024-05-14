@@ -25,11 +25,25 @@ public class Z1_Consumer {
         channel.queueDeclare(QUEUE_NAME, false, false, false, null);
 
         // consumer (handle msg)
+        //1A
         Consumer consumer = new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                 String message = new String(body, "UTF-8");
                 System.out.println("Received: " + message);
+
+                try {
+                    int timeToSleep = Integer.parseInt(message);
+                    System.out.println("Sleeping for " + timeToSleep + " seconds...");
+                    Thread.sleep(timeToSleep * 1000);
+                    System.out.println("Done sleeping.");
+
+                    channel.basicAck(envelope.getDeliveryTag(), false);
+                } catch (NumberFormatException e) {
+                    System.err.println("Invalid sleep time received: " + message);
+                } catch (InterruptedException e) {
+                    System.err.println("Sleep interrupted.");
+                }
             }
         };
 
