@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.apache.zookeeper:zookeeper:3.8.4'
+}
+
+application {
+    mainClass = 'ZooKeeperWatcherApp'
+}
+
+run {
+    standardInput = System.in
+}
